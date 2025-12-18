@@ -1,0 +1,44 @@
+{
+  "name": "cnarsugu-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CNAR Sugu Insurance Platform - Monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "cnarsugu-front",
+    "cnarSuguApi"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:api": "turbo run start:dev --filter=cnar-sugu-api",
+    "dev:mobile": "turbo run start --filter=cnar-sugu",
+    "dev:web": "turbo run dev --filter=@cnarsugu/web",
+    "build": "turbo run build",
+    "build:api": "turbo run build --filter=cnar-sugu-api",
+    "build:mobile": "turbo run build --filter=cnar-sugu",
+    "build:web": "turbo run build --filter=@cnarsugu/web",
+    "build:production": "NODE_ENV=production turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "type-check": "turbo run type-check",
+    "deploy:dev": "docker-compose up --build -d",
+    "deploy:prod": "docker-compose -f docker-compose.prod.yml up --build -d",
+    "deploy:stop": "docker-compose down",
+    "deploy:logs": "docker-compose logs -f",
+    "deploy:verify": "./scripts/verify-deployment.sh"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "prettier": "^3.2.5",
+    "turbo": "^1.12.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.4"
+}

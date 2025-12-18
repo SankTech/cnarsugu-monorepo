@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Private Docker Registry
+  registry:
+    image: registry:2
+    container_name: cnarsugu-registry
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/registry.crt
+      REGISTRY_HTTP_TLS_KEY: /certs/registry.key
+    volumes:
+      - registry_data:/data
+      - ./auth:/auth:ro
+      - ./certs:/certs:ro
+    networks:
+      - registry-network
+
+  # Registry UI for easier management
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: cnarsugu-registry-ui
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      SINGLE_REGISTRY: true
+      REGISTRY_TITLE: CNAR Sugu Docker Registry
+      DELETE_IMAGES: true
+      SHOW_CONTENT_DIGEST: true
+      NGINX_PROXY_PASS_URL: http://registry:5000
+      SHOW_CATALOG_NB_TAGS: true
+      CATALOG_MIN_BRANCHES: 1
+      CATALOG_MAX_BRANCHES: 1
+      TAGLIST_PAGE_SIZE: 100
+      REGISTRY_SECURED: false
+      CATALOG_ELEMENTS_LIMIT: 1000
+    depends_on:
+      - registry
+    networks:
+      - registry-network
+
+  # Registry cleanup service
+  registry-cleanup:
+    image: mortensrasmussen/docker-registry-cleanup:latest
+    container_name: cnarsugu-registry-cleanup
+    restart: unless-stopped
+    environment:
+      REGISTRY_URL: http://registry:5000
+      # Keep last 5 versions of each image
+      KEEP_LAST: 5
+      # Run cleanup every 24 hours
+      CLEANUP_INTERVAL: 86400
+    depends_on:
+      - registry
+    networks:
+      - registry-network
+
+volumes:
+  registry_data:
+
+networks:
+  registry-network:
+    driver: bridge

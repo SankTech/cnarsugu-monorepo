@@ -1,0 +1,112 @@
+name: Build Web Frontend to Registry
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - '.github/workflows/build-web-registry.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+
+env:
+  REGISTRY_URL: ${{ secrets.REGISTRY_URL || 'localhost:5000' }}
+  IMAGE_NAME: cnarsugu-web
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.4
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --filter=@cnarsugu/web...
+        
+      - name: Type check
+        run: pnpm run type-check --filter=@cnarsugu/web
+        
+      - name: Lint
+        run: pnpm run lint --filter=@cnarsugu/web
+        
+      - name: Build
+        run: pnpm run build --filter=@cnarsugu/web
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+          
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          target: runner
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production
+            NEXT_TELEMETRY_DISABLED=1
+            
+      - name: Image digest
+        run: echo ${{ steps.build.outputs.digest }}
+
+  deploy-notification:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Deployment ready notification
+        run: |
+          echo "🚀 Web frontend image built and pushed to registry!"
+          echo "📋 Deployment information:"
+          echo "   Registry: ${{ env.REGISTRY_URL }}"
+          echo "   Image: ${{ env.IMAGE_NAME }}"
+          echo "   Tags: latest, main-${{ github.sha }}"
+          echo ""
+          echo "🔗 Deploy to Dokploy:"
+          echo "   1. Use apps/web/docker-compose.dokploy.yml"
+          echo "   2. Set REGISTRY_URL=${{ env.REGISTRY_URL }}"
+          echo "   3. Set VERSION=latest or main-${{ github.sha }}"

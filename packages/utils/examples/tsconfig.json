@@ -1,0 +1,16 @@
+{
+  "extends": "../../typescript-config/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "rootDir": ".",
+    "outDir": "../dist",
+    "baseUrl": "..",
+    "paths": {
+      "@cnarsugu/utils": ["./src/index.ts"]
+    },
+    "types": []
+  },
+  "include": ["*.ts"]
+}

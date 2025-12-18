@@ -1,0 +1,12 @@
+{
+  "name": "@cnarsugu/typescript-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared TypeScript configurations for CNAR Sugu monorepo",
+  "files": [
+    "base.json",
+    "nextjs.json",
+    "react-native.json",
+    "package.json"
+  ]
+}

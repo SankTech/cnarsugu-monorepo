@@ -1,0 +1,36 @@
+{
+  "name": "@cnarsugu/schemas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zod validation schemas for CNAR Sugu",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@cnarsugu/typescript-config": "workspace:*",
+    "@cnarsugu/utils": "workspace:*",
+    "@types/jest": "29.2.4",
+    "@types/node": "18.11.18",
+    "fast-check": "^4.3.0",
+    "jest": "29.3.1",
+    "ts-jest": "29.0.3",
+    "typescript": "^5.3.3"
+  }
+}

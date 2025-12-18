@@ -1,0 +1,25 @@
+{
+  "name": "@cnarsugu/types",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared TypeScript types for CNAR Sugu",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cnarsugu/typescript-config": "workspace:*",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}

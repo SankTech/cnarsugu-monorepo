@@ -1,0 +1,26 @@
+# Development overrides for docker-compose.yml
+version: '3.8'
+
+services:
+  web:
+    build:
+      target: development
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/web/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=https://cnarsugu.cloud/api/v2
+      - WATCHPACK_POLLING=true
+    command: pnpm run dev --filter=@cnarsugu/web
+
+  api:
+    volumes:
+      - ./cnarSuguApi:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/cnarsugu
+    command: pnpm run start:dev
