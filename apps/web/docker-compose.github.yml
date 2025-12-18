@@ -1,9 +1,8 @@
 version: '3.8'
 
 services:
-  # Web Frontend Only
   cnarsugu-web:
-    image: ${REGISTRY_URL:-ghcr.io/yourusername}/cnarsugu-web:${VERSION:-latest}
+    image: ghcr.io/yourusername/cnarsugu-web:latest
     ports:
       - "3000:3000"
     environment:
