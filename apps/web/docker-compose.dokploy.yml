@@ -3,9 +3,11 @@ version: '3.8'
 services:
   # Web Frontend from Registry
   cnarsugu-web:
-    image: ${REGISTRY_URL:-localhost:5000}/cnarsugu-web:${VERSION:-latest}
-    ports:
-      - "3000:3000"
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: runner
+      - "3002:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
