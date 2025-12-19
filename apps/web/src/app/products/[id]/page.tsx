@@ -3,53 +3,24 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import dataService from '@/lib/dataService';
-import type { InsuranceProduct, CoverageFormula } from '@/lib/api';
+import { useGetInsuranceProductQuery, useGetProductFormulasQuery, type InsuranceProduct, type CoverageFormula } from '@cnarsugu/store';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const productId = parseInt(params.id as string);
 
-  const [product, setProduct] = useState<InsuranceProduct | null>(null);
-  const [formulas, setFormulas] = useState<CoverageFormula[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: product, isLoading: loadingProduct, error: productError } = useGetInsuranceProductQuery(productId, {
+    skip: isNaN(productId),
+  });
 
-  useEffect(() => {
-    const loadProductData = async () => {
-      try {
-        setLoading(true);
-        
-        // Load product details
-        const productData = await dataService.getInsuranceProductById(productId);
-        if (!productData) {
-          setError('Produit non trouvé');
-          return;
-        }
-        
-        setProduct(productData);
+  const { data: formulasData, isLoading: loadingFormulas } = useGetProductFormulasQuery(productId, {
+    skip: isNaN(productId) || !product,
+  });
 
-        // Load formulas if available
-        try {
-          const formulasData = await dataService.getProductFormulas(productId);
-          setFormulas(formulasData);
-        } catch (formulaError) {
-          console.warn('No formulas available for this product:', formulaError);
-          // This is not an error for legacy products
-        }
-      } catch (err) {
-        setError('Erreur lors du chargement du produit');
-        console.error('Error loading product:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (productId) {
-      loadProductData();
-    }
-  }, [productId]);
+  const formulas = formulasData || [];
+  const loading = loadingProduct || loadingFormulas;
+  const error = productError ? 'Erreur lors du chargement du produit' : null;
 
   const handleSubscribe = () => {
     // For legacy products, redirect to enrollment with product info
@@ -120,16 +91,16 @@ export default function ProductDetailPage() {
           </svg>
           Retour aux produits
         </Link>
-        
+
         <div className="flex items-start gap-6">
           {/* Product Icon */}
-          <div 
+          <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0"
             style={{ backgroundColor: `${product.color}20`, color: product.color }}
           >
             {getProductIcon(product.productType)}
           </div>
-          
+
           {/* Product Info */}
           <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2">
@@ -138,14 +109,13 @@ export default function ProductDetailPage() {
             <p className="text-slate-600 dark:text-slate-400 text-lg">
               {product.description}
             </p>
-            
+
             {/* Product Type Badge */}
             <div className="mt-4">
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                product.productType === 'LEGACY' 
-                  ? 'bg-gray-100 text-gray-700'
-                  : 'bg-blue-100 text-blue-700'
-              }`}>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${product.productType === 'LEGACY'
+                ? 'bg-gray-100 text-gray-700'
+                : 'bg-blue-100 text-blue-700'
+                }`}>
                 {product.productType === 'LEGACY' ? 'Produit Existant' : 'Nouveau Produit'}
               </span>
             </div>
@@ -190,7 +160,7 @@ export default function ProductDetailPage() {
                       <div key={formula.id} className="border border-gray-200 rounded-lg p-4">
                         <h3 className="font-semibold text-lg mb-2">{formula.type}</h3>
                         <p className="text-gray-600 mb-3">{formula.description}</p>
-                        
+
                         {formula.coverage && formula.coverage.length > 0 && (
                           <div className="mb-3">
                             <h4 className="font-medium mb-2">Garanties:</h4>
@@ -204,7 +174,7 @@ export default function ProductDetailPage() {
                             </ul>
                           </div>
                         )}
-                        
+
                         {formula.price && (
                           <div className="text-lg font-bold text-primary">
                             {formula.price}
@@ -220,12 +190,12 @@ export default function ProductDetailPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                 <h3 className="font-bold text-lg mb-3">Information importante</h3>
                 <p className="text-gray-700 mb-4">
-                  {product.productType === 'LEGACY' 
+                  {product.productType === 'LEGACY'
                     ? 'Ce produit est disponible en agence. Pour plus d\'informations ou pour souscrire, veuillez nous contacter directement.'
                     : 'Ce produit peut être souscrit en ligne ou en agence selon vos préférences.'
                   }
                 </p>
-                
+
                 {product.coverageLink && (
                   <a
                     href={product.coverageLink}
@@ -243,7 +213,7 @@ export default function ProductDetailPage() {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
                 <h3 className="text-xl font-bold mb-4">Souscrire</h3>
-                
+
                 {/* Price */}
                 {product.price && (
                   <div className="mb-6">

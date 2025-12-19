@@ -16,12 +16,13 @@ services:
     networks:
       - cnarsugu-network
 
-  # Web Frontend
+  # Web Frontend (Expo)
   web:
-    image: ${REGISTRY_URL:-localhost:5000}/cnarsugu-web:${IMAGE_TAG:-latest}
+    image: ${REGISTRY_URL:-ghcr.io/your-username}/cnarsugu-web:${IMAGE_TAG:-latest}
+    ports:
+      - "3000:80"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://your-domain.com/api/v2
     depends_on:
       - api
     networks:

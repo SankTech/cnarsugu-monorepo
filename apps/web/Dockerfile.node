@@ -1,0 +1,32 @@
+# Simple Node.js Dockerfile for pre-built Next.js app
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY apps/web/package.json ./
+COPY apps/web/pnpm-lock.yaml* ./
+
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy the built application
+COPY apps/web/public ./public
+COPY --chown=nextjs:nodejs apps/web/.next ./.next
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["pnpm", "start"]

@@ -26,7 +26,10 @@ export const paymentApi = baseApi.injectEndpoints({
         getIacPrice: builder.query<IacPriceResponse, void>({
             query: () => '/v2/payment/iac/price',
         }),
+        getPaymentMethods: builder.query<any[], boolean | void>({
+            query: (activeOnly = true) => `/v2/payment-methods?active_only=${activeOnly}`,
+        }),
     }),
 });
 
-export const { useCreatePaymentV2Mutation, useGetIacPriceQuery } = paymentApi;
+export const { useCreatePaymentV2Mutation, useGetIacPriceQuery, useGetPaymentMethodsQuery } = paymentApi;

@@ -3,33 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
-import dataService from '@/lib/dataService';
-import type { InsuranceProduct } from '@/lib/api';
+import { useGetInsuranceProductsQuery, type InsuranceProduct } from '@cnarsugu/store';
 
 export default function Home() {
-  const [newProducts, setNewProducts] = useState<InsuranceProduct[]>([]);
-  const [legacyProducts, setLegacyProducts] = useState<InsuranceProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: allProductsResult, isLoading: loadingNew } = useGetInsuranceProductsQuery({});
+  const { data: legacyProductsResult, isLoading: loadingLegacy } = useGetInsuranceProductsQuery({ productType: 'LEGACY' });
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const [newProds, legacyProds] = await Promise.all([
-          dataService.getNewProducts(),
-          dataService.getLegacyProducts()
-        ]);
-        setNewProducts(newProds);
-        setLegacyProducts(legacyProds);
-      } catch (error) {
-        console.error('Error loading products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProducts();
-  }, []);
+  const newProducts = allProductsResult?.data?.filter(p => ['AUTO', 'MOTO', 'MULTIRISK_PRO', 'IAC'].includes(p.productType)) || [];
+  const legacyProducts = legacyProductsResult?.data || [];
+  const loading = loadingNew || loadingLegacy;
 
   const getProductIcon = (productType: string): string => {
     switch (productType) {
@@ -73,9 +55,9 @@ export default function Home() {
             </span>
             <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-slate-900 dark:text-white tracking-tight">
               L'assurance <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-500">réinventée</span>;
-              <br /> 
-L'espace d'assurance 
-par excellence
+              <br />
+              L'espace d'assurance
+              par excellence
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
               Souscrivez en quelques minutes à nos offres exclusives. Simple, rapide et transparent. Protégez ce qui compte le plus pour vous.
@@ -120,7 +102,7 @@ par excellence
                     href={getProductHref(product)}
                     className="group relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 p-8 rounded-2xl shadow-soft hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
                   >
-                    <div 
+                    <div
                       className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform"
                       style={{ backgroundColor: `${product.color}20`, color: product.color }}
                     >

@@ -4,7 +4,14 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-// Temporarily import from local API until store exports are fixed
+import {
+  useGetInsuranceProductsQuery,
+  useGetInsuranceProductQuery,
+  useGetProductFormulasQuery,
+  useSearchInsuranceProductsQuery,
+  useGetPaymentMethodsQuery,
+  useGetTermsAndConditionsQuery,
+} from '@cnarsugu/store';
 import type {
   InsuranceProduct,
   CoverageFormula,
@@ -50,61 +57,69 @@ export function useAsync<T>(
 }
 
 // Insurance Products hooks - temporarily using dataService until Redux hooks are fixed
+// Insurance Products hooks - using Redux hooks
 export function useInsuranceProducts(filters: ProductFilters = {}) {
-  return useAsync(
-    () => {
-      // Use dataService as fallback for now
-      const dataService = require('./dataService').default;
-      return dataService.getInsuranceProducts(filters);
-    },
-    [JSON.stringify(filters)]
-  );
+  const { data, isLoading, error, refetch } = useGetInsuranceProductsQuery(filters);
+  return {
+    data: data?.data || [],
+    loading: isLoading,
+    error,
+    refetch
+  };
 }
 
 export function useInsuranceProduct(id: number) {
-  return useAsync(
-    () => {
-      const dataService = require('./dataService').default;
-      return dataService.getInsuranceProductById(id);
-    },
-    [id]
-  );
+  const { data, isLoading, error, refetch } = useGetInsuranceProductQuery(id);
+  return {
+    data,
+    loading: isLoading,
+    error,
+    refetch
+  };
 }
 
 export function useProductFormulas(productId: number) {
-  return useAsync(
-    () => {
-      const dataService = require('./dataService').default;
-      return dataService.getProductFormulas(productId);
-    },
-    [productId]
-  );
+  const { data, isLoading, error, refetch } = useGetProductFormulasQuery(productId);
+  return {
+    data: data || [],
+    loading: isLoading,
+    error,
+    refetch
+  };
 }
 
 export function useSearchProducts(searchParams: SearchFilters) {
-  return useAsync(
-    () => {
-      const dataService = require('./dataService').default;
-      return dataService.searchProducts(searchParams);
-    },
-    [JSON.stringify(searchParams)]
-  );
+  const { data, isLoading, error, refetch } = useSearchInsuranceProductsQuery(searchParams);
+  return {
+    data: data || [],
+    loading: isLoading,
+    error,
+    refetch
+  };
 }
 
 // Payment Methods hook
 export function usePaymentMethods(useCache = true) {
-  return useAsync(
-    () => useCache ? getCachedPaymentMethods() : getPaymentMethods(),
-    [useCache]
-  );
+  // RTK Query handles caching automatically
+  const { data, isLoading, error, refetch } = useGetPaymentMethodsQuery(useCache);
+  return {
+    data: data || [],
+    loading: isLoading,
+    error,
+    refetch
+  };
 }
 
 // Terms and Conditions hook
 export function useTermsAndConditions(useCache = true) {
-  return useAsync(
-    () => useCache ? getCachedTermsAndConditions() : getTermsAndConditions(),
-    [useCache]
-  );
+  // RTK Query handles caching automatically
+  const { data, isLoading, error, refetch } = useGetTermsAndConditionsQuery(useCache);
+  return {
+    data: data || [],
+    loading: isLoading,
+    error,
+    refetch
+  };
 }
 
 // Specific product type hooks using V2 API
@@ -228,12 +243,12 @@ export function useDebounce<T>(value: T, delay: number): T {
 // Search hook with debouncing using Redux store
 export function useDebouncedSearch(searchTerm: string, filters: ProductFilters = {}) {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  
+
   const searchFilters = {
     ...filters,
     search: debouncedSearchTerm.trim() || undefined,
   };
-  
+
   return useInsuranceProducts(searchFilters);
 }
 
@@ -251,7 +266,7 @@ export function useMediaQuery(query: string): boolean {
 
     const listener = () => setMatches(media.matches);
     media.addEventListener('change', listener);
-    
+
     return () => media.removeEventListener('change', listener);
   }, [matches, query]);
 
@@ -283,7 +298,7 @@ export function useFormValidation<T extends Record<string, any>>(
 
   const setValue = useCallback((field: keyof T, value: any) => {
     setValues(prev => ({ ...prev, [field]: value }));
-    
+
     // Validate field if it has been touched
     if (touched[field]) {
       const error = validationRules[field]?.(value);
@@ -293,7 +308,7 @@ export function useFormValidation<T extends Record<string, any>>(
 
   const setFieldTouched = useCallback((field: keyof T) => {
     setTouched(prev => ({ ...prev, [field]: true }));
-    
+
     // Validate field when touched
     const error = validationRules[field]?.(values[field]);
     setErrors(prev => ({ ...prev, [field]: error || undefined }));
@@ -351,7 +366,7 @@ export function useAsyncSubmit<T>(
       setLoading(true);
       setError(null);
       setSuccess(false);
-      
+
       await submitFunction(data);
       setSuccess(true);
     } catch (err) {

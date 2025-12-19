@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import dataService from '@/lib/dataService';
-import type { InsuranceProduct } from '@/lib/api';
+import { useGetInsuranceProductsQuery, type InsuranceProduct } from '@cnarsugu/store';
 
 // Product Card Component
 function ProductCard({ product }: { product: InsuranceProduct }) {
@@ -43,7 +42,7 @@ function ProductCard({ product }: { product: InsuranceProduct }) {
       )}
 
       {/* Icon */}
-      <div 
+      <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform"
         style={{ backgroundColor: `${product.color}20`, color: product.color }}
       >
@@ -144,10 +143,10 @@ function ProductSearch({ onSearch }: { onSearch: (query: string) => void }) {
 }
 
 // Filter Component
-function ProductFilters({ 
-  selectedFilter, 
-  onFilterChange 
-}: { 
+function ProductFilters({
+  selectedFilter,
+  onFilterChange
+}: {
   selectedFilter: string;
   onFilterChange: (filter: string) => void;
 }) {
@@ -165,11 +164,10 @@ function ProductFilters({
         <button
           key={filter.id}
           onClick={() => onFilterChange(filter.id)}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-            selectedFilter === filter.id
-              ? 'bg-primary text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedFilter === filter.id
+            ? 'bg-primary text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
         >
           {filter.label}
         </button>
@@ -179,34 +177,13 @@ function ProductFilters({
 }
 
 export default function ProductsPage() {
-  const [allProducts, setAllProducts] = useState<InsuranceProduct[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<InsuranceProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: productsResult, isLoading, error: queryError } = useGetInsuranceProductsQuery({});
+  const allProducts = productsResult?.data || [];
+
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load products
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const products = await dataService.getInsuranceProducts();
-        setAllProducts(products);
-        setFilteredProducts(products);
-      } catch (err) {
-        setError('Erreur lors du chargement des produits');
-        console.error('Error loading products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProducts();
-  }, []);
-
-  // Filter products
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let filtered = [...allProducts];
 
     // Apply filter
@@ -231,14 +208,17 @@ export default function ProductsPage() {
 
     // Apply search
     if (searchQuery.trim()) {
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    setFilteredProducts(filtered);
+    return filtered;
   }, [allProducts, selectedFilter, searchQuery]);
+
+  const error = queryError ? 'Erreur lors du chargement des produits' : null;
+  const loading = isLoading;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -295,7 +275,7 @@ export default function ProductsPage() {
           Nos Produits d'Assurance
         </h1>
         <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl">
-          Découvrez notre gamme complète de produits d'assurance adaptés à vos besoins, 
+          Découvrez notre gamme complète de produits d'assurance adaptés à vos besoins,
           que vous soyez particulier ou entreprise.
         </p>
       </div>
@@ -304,9 +284,9 @@ export default function ProductsPage() {
         {/* Search and Filters */}
         <div className="mb-12 space-y-6">
           <ProductSearch onSearch={handleSearch} />
-          <ProductFilters 
-            selectedFilter={selectedFilter} 
-            onFilterChange={handleFilterChange} 
+          <ProductFilters
+            selectedFilter={selectedFilter}
+            onFilterChange={handleFilterChange}
           />
         </div>
 
@@ -330,7 +310,7 @@ export default function ProductsPage() {
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-bold mb-2">Aucun produit trouvé</h3>
             <p className="text-gray-600 mb-6">
-              {searchQuery 
+              {searchQuery
                 ? `Aucun produit ne correspond à votre recherche "${searchQuery}"`
                 : 'Aucun produit ne correspond aux filtres sélectionnés'
               }

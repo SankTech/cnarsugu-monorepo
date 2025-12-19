@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  useAppSelector, 
+import {
+  useAppSelector,
   useAppDispatch,
   setPaymentMethod,
   setPaymentAmount,
@@ -14,10 +14,11 @@ import {
   selectEnrollmentForm,
 } from '@cnarsugu/store';
 
-// Temporarily comment out the missing hooks until they're properly exported
-// import { useCreatePaymentV2Mutation } from '@cnarsugu/store';
-// import { useCreateSubscriptionV2Mutation } from '@cnarsugu/store';
-import { selectTotalPrice } from '@cnarsugu/store';
+import {
+  useCreatePaymentV2Mutation,
+  useCreateSubscriptionV2Mutation,
+  selectTotalPrice
+} from '@cnarsugu/store';
 import { ProductType, AUTO_FORMULA_LABELS, MOTO_FORMULA_LABELS } from '@cnarsugu/types';
 import { formatPrice } from '@cnarsugu/utils';
 import type { PaymentMethod } from '@cnarsugu/store';
@@ -41,6 +42,7 @@ export default function PaymentPage() {
 
   // Local state
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [mobileMoneyProvider, setMobileMoneyProvider] = useState('ORANGE_MONEY');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ phoneNumber?: string }>({});
@@ -85,13 +87,9 @@ export default function PaymentPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // API Mutations - Temporarily commented out until hooks are properly exported
-  // const [createPayment, { isLoading: isPaymentLoading }] = useCreatePaymentV2Mutation();
-  // const [createSubscription, { isLoading: isSubscriptionLoading }] = useCreateSubscriptionV2Mutation();
-  
-  // Temporary placeholders
-  const isPaymentLoading = false;
-  const isSubscriptionLoading = false;
+  // API Mutations
+  const [createPayment, { isLoading: isPaymentLoading }] = useCreatePaymentV2Mutation();
+  const [createSubscription, { isLoading: isSubscriptionLoading }] = useCreateSubscriptionV2Mutation();
 
   // Get enrollment form data
   const enrollmentForm = useAppSelector(selectEnrollmentForm);
@@ -107,22 +105,20 @@ export default function PaymentPage() {
     dispatch(startPaymentProcessing());
 
     try {
-      // 1. Create Payment - Temporarily commented out
+      // 1. Create Payment
       console.log('Processing payment...');
-      // const paymentResponse = await createPayment({
-      //   amount: totalPrice.toString(),
-      //   phoneNumber: selectedMethod === 'MOBILE_MONEY' ? phoneNumber : '00000000', // Handle other methods
-      //   serviceCode: selectedMethod === 'MOBILE_MONEY' ? 'ORANGE_MONEY' : 'CASH', // TODO: Add provider selection
-      //   includeIac: (selectedProductType === ProductType.AUTO && autoSelection?.addIac) ||
-      //     (selectedProductType === ProductType.MOTO && motoSelection?.includesIac) ||
-      //     selectedProductType === ProductType.IAC,
-      //   productType: selectedProductType || 'UNKNOWN',
-      // }).unwrap();
+      const paymentResponse = await createPayment({
+        amount: totalPrice.toString(),
+        phoneNumber: selectedMethod === 'MOBILE_MONEY' ? phoneNumber : '00000000', // Handle other methods
+        serviceCode: selectedMethod === 'MOBILE_MONEY' ? mobileMoneyProvider : 'CASH',
+        includeIac: (selectedProductType === ProductType.AUTO && autoSelection?.addIac) ||
+          (selectedProductType === ProductType.MOTO && motoSelection?.includesIac) ||
+          selectedProductType === ProductType.IAC,
+        productType: selectedProductType || 'UNKNOWN',
+      }).unwrap();
 
-      // Temporary mock response
-      const paymentResponse = { success: true, id: 'mock-payment-id' };
       console.log('Payment successful:', paymentResponse);
-      const paymentId = paymentResponse.id; // Adjust based on actual response structure
+      const paymentId = paymentResponse.id || paymentResponse.paymentId; // Adjust based on actual response structure
       dispatch(paymentSuccess(paymentId));
 
       // 2. Create Subscription
@@ -160,8 +156,8 @@ export default function PaymentPage() {
         formData.append('productDetails[businessType]', multirisqueSelection.businessType);
       }
 
-      // await createSubscription(formData).unwrap();
-      console.log('Subscription created successfully (mocked)');
+      await createSubscription(formData).unwrap();
+      console.log('Subscription created successfully');
 
       // Navigate to confirmation page
       router.push('/confirmation');
@@ -200,15 +196,15 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-slate-800 shadow-sm border-b dark:border-slate-700">
         <div className="container mx-auto px-6 py-4">
           <Link href="/enrollment" className="text-primary hover:underline text-sm mb-2 inline-block">
             ← Retour à l'inscription
           </Link>
-          <h1 className="text-3xl font-bold">Paiement</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Paiement</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Choisissez votre mode de paiement pour finaliser votre souscription
           </p>
         </div>
@@ -219,8 +215,8 @@ export default function PaymentPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Payment Form - Left Column */}
             <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold mb-6">Mode de paiement</h2>
+              <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 border dark:border-slate-700">
+                <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Mode de paiement</h2>
 
                 {/* Payment Method Selection */}
                 <div className="space-y-4 mb-8">
@@ -229,14 +225,16 @@ export default function PaymentPage() {
                     type="button"
                     onClick={() => handleMethodSelect('MOBILE_MONEY')}
                     className={`w-full p-4 border-2 rounded-lg text-left transition-all flex items-center ${selectedMethod === 'MOBILE_MONEY'
-                      ? 'border-primary bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500'
                       }`}
                   >
-                    <div className="text-3xl mr-4">📱</div>
+                    <div className="mr-4 w-12 h-12 relative flex-shrink-0">
+                      <img src="/assets/payment1.png" alt="Mobile Money" className="object-contain w-full h-full" />
+                    </div>
                     <div className="flex-1">
-                      <div className="font-semibold text-lg">Mobile Money</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="font-semibold text-lg text-slate-900 dark:text-white">Mobile Money</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
                         Orange Money, MTN Mobile Money, Moov Money
                       </div>
                     </div>
@@ -247,7 +245,23 @@ export default function PaymentPage() {
 
                   {/* Mobile Money Phone Number Input */}
                   {selectedMethod === 'MOBILE_MONEY' && (
-                    <div className="ml-12 mt-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="ml-12 mt-4 p-4 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                      <div className="mb-4">
+                        <label className="block text-sm font-semibold mb-2">
+                          Opérateur <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={mobileMoneyProvider}
+                          onChange={(e) => setMobileMoneyProvider(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white mb-2"
+                        >
+                          <option value="ORANGE_MONEY">Orange Money</option>
+                          <option value="MOOV_MONEY">Moov Money</option>
+                          <option value="MTN_MONEY">MTN Mobile Money</option>
+                          <option value="WAVE">Wave</option>
+                        </select>
+                      </div>
+
                       <label className="block text-sm font-semibold mb-2">
                         Numéro de téléphone <span className="text-red-500">*</span>
                       </label>
@@ -255,13 +269,13 @@ export default function PaymentPage() {
                         type="tel"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="+224XXXXXXXXX"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                        placeholder="+223XXXXXXXX"
                       />
                       {errors.phoneNumber && (
                         <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
                       )}
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         Vous recevrez une notification pour confirmer le paiement
                       </p>
                     </div>
@@ -272,14 +286,16 @@ export default function PaymentPage() {
                     type="button"
                     onClick={() => handleMethodSelect('CREDIT_CARD')}
                     className={`w-full p-4 border-2 rounded-lg text-left transition-all flex items-center ${selectedMethod === 'CREDIT_CARD'
-                      ? 'border-primary bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500'
                       }`}
                   >
-                    <div className="text-3xl mr-4">💳</div>
+                    <div className="mr-4 w-12 h-12 relative flex-shrink-0">
+                      <img src="/assets/payment2.png" alt="Carte Bancaire" className="object-contain w-full h-full" />
+                    </div>
                     <div className="flex-1">
-                      <div className="font-semibold text-lg">Carte Bancaire</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="font-semibold text-lg text-slate-900 dark:text-white">Carte Bancaire</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
                         Visa, Mastercard, American Express
                       </div>
                     </div>
@@ -289,8 +305,8 @@ export default function PaymentPage() {
                   </button>
 
                   {selectedMethod === 'CREDIT_CARD' && (
-                    <div className="ml-12 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-gray-700">
+                    <div className="ml-12 mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
                         <span className="font-semibold">Note:</span> Le paiement par carte bancaire
                         sera disponible prochainement. Veuillez utiliser Mobile Money pour le moment.
                       </p>
@@ -302,11 +318,13 @@ export default function PaymentPage() {
                     type="button"
                     onClick={() => handleMethodSelect('PAYPAL')}
                     className={`w-full p-4 border-2 rounded-lg text-left transition-all flex items-center ${selectedMethod === 'PAYPAL'
-                      ? 'border-primary bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500'
                       }`}
                   >
-                    <div className="text-3xl mr-4">🅿️</div>
+                    <div className="mr-4 w-12 h-12 relative flex-shrink-0">
+                      <img src="/assets/payment3.png" alt="PayPal" className="object-contain w-full h-full" />
+                    </div>
                     <div className="flex-1">
                       <div className="font-semibold text-lg">PayPal</div>
                       <div className="text-sm text-gray-600">
@@ -319,8 +337,8 @@ export default function PaymentPage() {
                   </button>
 
                   {selectedMethod === 'PAYPAL' && (
-                    <div className="ml-12 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-gray-700">
+                    <div className="ml-12 mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
                         <span className="font-semibold">Note:</span> Le paiement via PayPal
                         sera disponible prochainement. Veuillez utiliser Mobile Money pour le moment.
                       </p>
@@ -329,12 +347,12 @@ export default function PaymentPage() {
                 </div>
 
                 {/* Security Notice */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
                   <div className="flex items-start">
                     <div className="text-2xl mr-3">🔒</div>
                     <div>
-                      <h4 className="font-semibold text-green-800 mb-1">Paiement sécurisé</h4>
-                      <p className="text-sm text-green-700">
+                      <h4 className="font-semibold text-green-800 dark:text-green-300 mb-1">Paiement sécurisé</h4>
+                      <p className="text-sm text-green-700 dark:text-green-400">
                         Toutes les transactions sont cryptées et sécurisées. Vos informations
                         bancaires ne sont jamais stockées sur nos serveurs.
                       </p>
@@ -347,7 +365,7 @@ export default function PaymentPage() {
                   <button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex-1 px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-6 py-3 border border-gray-300 dark:border-slate-600 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
                   >
                     Retour
                   </button>
@@ -364,8 +382,8 @@ export default function PaymentPage() {
 
             {/* Order Summary - Right Column */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
-                <h2 className="text-xl font-bold mb-6">Récapitulatif</h2>
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 sticky top-8 border dark:border-slate-700">
+                <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Récapitulatif</h2>
 
                 {/* Product Summary */}
                 <div className="space-y-4 mb-6">

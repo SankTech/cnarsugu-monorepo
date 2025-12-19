@@ -1,0 +1,6 @@
+!apps/web/.next/standalone
+!apps/web/public
+!apps/web/package.json
+node_modules
+.git
+.vscode

@@ -19,12 +19,12 @@ const getApiBaseUrl = (): string => {
   // Node environment or React Native
   console.log('BaseAPI: Server/Node environment detected');
   console.log('BaseAPI: process.env.API_URL:', process.env.API_URL);
-  return process.env.API_URL || 'https://cnarsugu.cloud/';
+  return process.env.API_URL || 'https://cnarsugu.cloud';
 };
 
 const API_BASE_URL = getApiBaseUrl();
 console.log('BaseAPI: API_BASE_URL:', API_BASE_URL);
-console.log('BaseAPI: Constructed baseUrl:', `${API_BASE_URL}/api`);
+console.log('BaseAPI: Constructed baseUrl:', `${API_BASE_URL}`);
 
 /**
  * Base API configuration for RTK Query
@@ -33,7 +33,7 @@ console.log('BaseAPI: Constructed baseUrl:', `${API_BASE_URL}/api`);
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/api`,
+    baseUrl: `${API_BASE_URL}`,
     prepareHeaders: (headers) => {
       // Add any common headers here (e.g., authentication tokens)
       return headers;

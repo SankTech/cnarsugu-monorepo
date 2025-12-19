@@ -3,7 +3,7 @@
  * Updated to work with Redux store and V2 API endpoints
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cnarsugu.cloud';
 
 // Define types locally since they're not properly exported from store yet
 export interface InsuranceProduct {
@@ -93,7 +93,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -104,11 +104,11 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error(`API request failed: ${url}`, error);
@@ -231,7 +231,7 @@ export const cache = new CacheManager();
 export const getCachedPaymentMethods = async (): Promise<PaymentMethod[]> => {
   const cacheKey = 'payment_methods';
   const cached = cache.get(cacheKey);
-  
+
   if (cached) {
     return cached;
   }
@@ -244,7 +244,7 @@ export const getCachedPaymentMethods = async (): Promise<PaymentMethod[]> => {
 export const getCachedTermsAndConditions = async (): Promise<TermsAndConditions[]> => {
   const cacheKey = 'terms_conditions';
   const cached = cache.get(cacheKey);
-  
+
   if (cached) {
     return cached;
   }

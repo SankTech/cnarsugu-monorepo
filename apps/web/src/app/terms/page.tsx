@@ -2,30 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import dataService from '@/lib/dataService';
-import type { TermsAndConditions } from '@/lib/api';
+import { useGetTermsAndConditionsQuery, type TermsAndConditions } from '@cnarsugu/store';
 
 export default function TermsPage() {
-  const [terms, setTerms] = useState<TermsAndConditions[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadTerms = async () => {
-      try {
-        setLoading(true);
-        const termsData = await dataService.getTermsAndConditions();
-        setTerms(termsData);
-      } catch (err) {
-        setError('Erreur lors du chargement des conditions d\'utilisation');
-        console.error('Error loading terms:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadTerms();
-  }, []);
+  const { data: termsData, isLoading: loading, error: queryError } = useGetTermsAndConditionsQuery();
+  const terms = termsData || [];
+  const error = queryError ? 'Erreur lors du chargement des conditions d\'utilisation' : null;
 
   if (loading) {
     return (

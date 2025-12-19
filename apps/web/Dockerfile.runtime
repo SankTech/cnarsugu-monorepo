@@ -1,0 +1,25 @@
+# Runtime-only Dockerfile using pre-built standalone files
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy the built application (must be built locally first)
+COPY apps/web/public ./public
+# Copy standalone output
+COPY --chown=nextjs:nodejs apps/web/.next/standalone ./
+# Copy static files
+COPY --chown=nextjs:nodejs apps/web/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]

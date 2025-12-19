@@ -53,6 +53,13 @@ docker build \
     --tag "$REGISTRY_URL/$IMAGE_NAME:latest" \
     --build-arg NODE_ENV=production \
     --build-arg NEXT_TELEMETRY_DISABLED=1 \
+    --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+    --build-arg NEXT_PUBLIC_API_VERSION="$NEXT_PUBLIC_API_VERSION" \
+    --build-arg NEXT_PUBLIC_APP_NAME="$NEXT_PUBLIC_APP_NAME" \
+    --build-arg NEXT_PUBLIC_APP_VERSION="$NEXT_PUBLIC_APP_VERSION" \
+    --build-arg NEXT_PUBLIC_PAYMENT_CALLBACK_URL="$NEXT_PUBLIC_PAYMENT_CALLBACK_URL" \
+    --build-arg NEXT_PUBLIC_ENABLE_LEGACY_PRODUCTS="$NEXT_PUBLIC_ENABLE_LEGACY_PRODUCTS" \
+    --build-arg NEXT_PUBLIC_ENABLE_DEBUG_MODE="$NEXT_PUBLIC_ENABLE_DEBUG_MODE" \
     .
 
 echo "✅ Build completed successfully!"

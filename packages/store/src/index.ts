@@ -53,12 +53,22 @@ export {
   paymentApi,
   useCreatePaymentV2Mutation,
   useGetIacPriceQuery,
+  useGetPaymentMethodsQuery,
 } from './api/paymentApi';
 
 export type {
   CreatePaymentV2Request,
   IacPriceResponse,
 } from './api/paymentApi';
+
+export {
+  infoApi,
+  useGetTermsAndConditionsQuery,
+} from './api/infoApi';
+
+export type {
+  TermsAndConditions,
+} from './api/infoApi';
 
 // ============================================================================
 // Slices

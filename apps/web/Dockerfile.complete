@@ -1,0 +1,62 @@
+# Complete working Dockerfile for Next.js app with monorepo dependencies
+FROM node:18-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@8.15.4
+
+# Copy workspace configuration and all package.json files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/types/package.json ./packages/types/
+COPY packages/schemas/package.json ./packages/schemas/
+COPY packages/store/package.json ./packages/store/
+COPY packages/hooks/package.json ./packages/hooks/
+COPY packages/utils/package.json ./packages/utils/
+
+# Install all dependencies including dev dependencies for build
+RUN NODE_ENV=development pnpm install --frozen-lockfile
+
+# Copy all source code
+COPY packages/ ./packages/
+COPY apps/web/ ./apps/web/
+COPY tsconfig.base.json ./
+COPY turbo.json ./
+
+# Build the web app from the apps/web directory
+WORKDIR /app/apps/web
+RUN NODE_ENV=production pnpm run build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy node_modules from deps stage (includes all dependencies)
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./node_modules
+
+# Copy package.json
+COPY apps/web/package.json ./
+
+# Copy the built application
+COPY --from=deps /app/apps/web/public ./public
+COPY --from=deps --chown=nextjs:nodejs /app/apps/web/.next ./.next
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node_modules/.bin/next", "start"]

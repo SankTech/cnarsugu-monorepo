@@ -37,14 +37,14 @@ export default function ConfirmationPage() {
 
   const handleDownloadReceipt = async () => {
     setIsDownloading(true);
-    
+
     try {
       // TODO: Integrate with actual receipt generation API
       console.log('Downloading receipt for payment:', paymentState.paymentId);
-      
+
       // Simulate download
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
       // Create a simple receipt text
       const receiptContent = generateReceiptText();
       const blob = new Blob([receiptContent], { type: 'text/plain' });
@@ -56,7 +56,7 @@ export default function ConfirmationPage() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      
+
       alert('Reçu téléchargé avec succès!');
     } catch (error) {
       console.error('Download error:', error);
@@ -130,12 +130,12 @@ export default function ConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-slate-800 shadow-sm border-b dark:border-slate-700">
         <div className="container mx-auto px-6 py-4">
-          <h1 className="text-3xl font-bold text-green-600">✓ Souscription confirmée</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-green-600 dark:text-green-400">✓ Souscription confirmée</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Votre paiement a été traité avec succès
           </p>
         </div>
@@ -144,25 +144,25 @@ export default function ConfirmationPage() {
       <main className="container mx-auto px-6 py-8">
         <div className="max-w-3xl mx-auto">
           {/* Success Message */}
-          <div className="bg-green-50 border-2 border-green-500 rounded-lg p-8 mb-8 text-center">
+          <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-500 dark:border-green-600 rounded-lg p-8 mb-8 text-center">
             <div className="text-6xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold text-green-800 mb-2">
+            <h2 className="text-2xl font-bold text-green-800 dark:text-green-300 mb-2">
               Paiement réussi!
             </h2>
-            <p className="text-green-700 mb-4">
+            <p className="text-green-700 dark:text-green-400 mb-4">
               Votre souscription a été enregistrée avec succès.
             </p>
-            <div className="bg-white rounded-lg p-4 inline-block">
-              <p className="text-sm text-gray-600 mb-1">Numéro de confirmation</p>
-              <p className="text-xl font-mono font-bold text-gray-800">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 inline-block shadow-sm">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Numéro de confirmation</p>
+              <p className="text-xl font-mono font-bold text-gray-800 dark:text-white">
                 {paymentState.paymentId}
               </p>
             </div>
           </div>
 
           {/* Product Summary */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold mb-6">Récapitulatif de votre souscription</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-6 mb-8 border dark:border-slate-700">
+            <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Récapitulatif de votre souscription</h2>
 
             {selectedProductType === ProductType.AUTO && autoSelection && (
               <div className="space-y-4">
@@ -188,7 +188,7 @@ export default function ConfirmationPage() {
                     <span className="font-semibold">+{formatPrice(iacAddOn.price)}</span>
                   </div>
                 )}
-                
+
                 {/* Coverage Summary */}
                 <div className="mt-6 pt-6 border-t-2 border-gray-300">
                   <h3 className="font-semibold mb-3">Garanties incluses</h3>
@@ -229,7 +229,7 @@ export default function ConfirmationPage() {
                     </p>
                   </div>
                 )}
-                
+
                 {/* Coverage Summary */}
                 <div className="mt-6 pt-6 border-t-2 border-gray-300">
                   <h3 className="font-semibold mb-3">Garanties incluses</h3>
@@ -263,7 +263,7 @@ export default function ConfirmationPage() {
                   <span className="text-gray-600">Prix</span>
                   <span className="font-semibold">{formatPrice(multirisqueSelection.price)}</span>
                 </div>
-                
+
                 {/* Coverage Summary */}
                 <div className="mt-6 pt-6 border-t-2 border-gray-300">
                   <h3 className="font-semibold mb-3">Garanties incluses</h3>
@@ -298,7 +298,7 @@ export default function ConfirmationPage() {
                   <span className="text-gray-600">Prix</span>
                   <span className="font-semibold">{formatPrice(iacAddOn.price)}</span>
                 </div>
-                
+
                 {/* Coverage Details */}
                 <div className="mt-6 pt-6 border-t-2 border-gray-300">
                   <h3 className="font-semibold mb-3">Garanties incluses</h3>
@@ -333,30 +333,30 @@ export default function ConfirmationPage() {
           </div>
 
           {/* Next Steps */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h3 className="font-bold text-lg mb-4">Prochaines étapes</h3>
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
+            <h3 className="font-bold text-lg mb-4 text-slate-900 dark:text-white">Prochaines étapes</h3>
             <ol className="space-y-3">
               <li className="flex items-start">
-                <span className="font-bold text-blue-600 mr-3">1.</span>
-                <span className="text-gray-700">
+                <span className="font-bold text-blue-600 dark:text-blue-400 mr-3">1.</span>
+                <span className="text-gray-700 dark:text-gray-300">
                   Vous recevrez un email de confirmation avec tous les détails de votre souscription
                 </span>
               </li>
               <li className="flex items-start">
-                <span className="font-bold text-blue-600 mr-3">2.</span>
-                <span className="text-gray-700">
+                <span className="font-bold text-blue-600 dark:text-blue-400 mr-3">2.</span>
+                <span className="text-gray-700 dark:text-gray-300">
                   Votre police d'assurance sera envoyée par email dans les 24-48 heures
                 </span>
               </li>
               <li className="flex items-start">
-                <span className="font-bold text-blue-600 mr-3">3.</span>
-                <span className="text-gray-700">
+                <span className="font-bold text-blue-600 dark:text-blue-400 mr-3">3.</span>
+                <span className="text-gray-700 dark:text-gray-300">
                   Notre équipe vous contactera pour finaliser les derniers détails
                 </span>
               </li>
               <li className="flex items-start">
-                <span className="font-bold text-blue-600 mr-3">4.</span>
-                <span className="text-gray-700">
+                <span className="font-bold text-blue-600 dark:text-blue-400 mr-3">4.</span>
+                <span className="text-gray-700 dark:text-gray-300">
                   Téléchargez votre reçu de paiement ci-dessous pour vos archives
                 </span>
               </li>
@@ -384,15 +384,15 @@ export default function ConfirmationPage() {
             </button>
             <button
               onClick={handleNewSubscription}
-              className="flex-1 bg-white border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              className="flex-1 bg-white dark:bg-transparent border-2 border-primary text-primary dark:text-primary-400 dark:border-primary-400 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
             >
               Nouvelle souscription
             </button>
           </div>
 
           {/* Support Info */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-600 mb-2">
+          <div className="mt-8 text-center text-gray-600 dark:text-gray-400">
+            <p className="mb-2">
               Besoin d'aide? Contactez notre service client
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 text-sm">
