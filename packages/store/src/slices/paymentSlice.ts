@@ -4,7 +4,7 @@ import type { AdditionalInfos } from '@cnarsugu/types';
 /**
  * Payment method types
  */
-export type PaymentMethod = 'MOBILE_MONEY' | 'CREDIT_CARD' | 'PAYPAL';
+export type PaymentMethodCategory = 'MOBILE_MONEY' | 'CREDIT_CARD' | 'PAYPAL';
 
 /**
  * Payment status types
@@ -15,7 +15,7 @@ export type PaymentStatus = 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'FAILED' | 'C
  * Payment form data interface
  */
 export interface PaymentFormData {
-  paymentMethod: PaymentMethod | null;
+  paymentMethod: PaymentMethodCategory | null;
   recipientNumber: string;
   serviceCode: string;
   amount: string;
@@ -28,6 +28,7 @@ export interface PaymentFormData {
  */
 export interface PaymentState {
   formData: PaymentFormData;
+  paymentMethodCategory: PaymentMethodCategory | null;
   status: PaymentStatus;
   paymentId: string | null;
   error: string | null;
@@ -46,6 +47,7 @@ const initialState: PaymentState = {
     additionalInfos: null,
     callback: '',
   },
+  paymentMethodCategory: null,
   status: 'PENDING',
   paymentId: null,
   error: null,
@@ -71,10 +73,10 @@ export const paymentSlice = createSlice({
     },
 
     /**
-     * Set payment method
+     * Set payment method category
      */
-    setPaymentMethod: (state, action: PayloadAction<PaymentMethod>) => {
-      state.formData.paymentMethod = action.payload;
+    setPaymentMethod: (state, action: PayloadAction<PaymentMethodCategory>) => {
+      state.paymentMethodCategory = action.payload;
     },
 
     /**

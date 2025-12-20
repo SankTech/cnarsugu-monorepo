@@ -71,7 +71,7 @@ export const pricingApi = baseApi.injectEndpoints({
     // ============================================================================
     // V2 API Endpoints
     // ============================================================================
-    
+
     /**
      * Get all insurance products with filtering (V2)
      */
@@ -130,7 +130,7 @@ export const pricingApi = baseApi.injectEndpoints({
     // ============================================================================
     // Legacy V1 Endpoints (Backward Compatibility)
     // ============================================================================
-    
+
     /**
      * Get Auto Prestige pricing for a specific CV range (Legacy)
      */
@@ -212,7 +212,7 @@ export const {
   useSearchInsuranceProductsQuery,
   useGetInsuranceProductQuery,
   useGetProductFormulasQuery,
-  
+
   // Legacy V1 API Hooks (Backward Compatibility)
   useGetAutoPricingQuery,
   useGetAllAutoPricingQuery,

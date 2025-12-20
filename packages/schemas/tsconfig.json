@@ -5,6 +5,14 @@
     "rootDir": "./src",
     "types": []
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/test-schemas.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/test-schemas.ts",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }

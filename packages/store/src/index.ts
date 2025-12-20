@@ -59,6 +59,7 @@ export {
 export type {
   CreatePaymentV2Request,
   IacPriceResponse,
+  PaymentMethod,
 } from './api/paymentApi';
 
 export {
@@ -117,7 +118,7 @@ export {
   paymentFailed,
   resetPaymentForm,
 } from './slices/paymentSlice';
-export type { PaymentState, PaymentFormData, PaymentMethod, PaymentStatus } from './slices/paymentSlice';
+export type { PaymentState, PaymentFormData, PaymentMethodCategory, PaymentStatus } from './slices/paymentSlice';
 
 // ============================================================================
 // Selectors

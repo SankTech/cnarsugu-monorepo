@@ -12,16 +12,16 @@ import {
   paymentSuccess,
   paymentFailed,
   selectEnrollmentForm,
-} from '@cnarsugu/store';
-
-import {
   useCreatePaymentV2Mutation,
   useCreateSubscriptionV2Mutation,
-  selectTotalPrice
+  useGetPaymentMethodsQuery,
+  selectTotalPrice,
+  type PaymentMethod,
+  type PaymentMethodCategory
 } from '@cnarsugu/store';
 import { ProductType, AUTO_FORMULA_LABELS, MOTO_FORMULA_LABELS } from '@cnarsugu/types';
 import { formatPrice } from '@cnarsugu/utils';
-import type { PaymentMethod } from '@cnarsugu/store';
+// No longer importing PaymentMethod from @cnarsugu/store separately
 
 // ============================================================================
 // Payment Page Component
@@ -41,11 +41,15 @@ export default function PaymentPage() {
   const totalPrice = useAppSelector(selectTotalPrice);
 
   // Local state
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
-  const [mobileMoneyProvider, setMobileMoneyProvider] = useState('ORANGE_MONEY');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodCategory | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<PaymentMethod | null>(null);
+  const [mobileMoneyProvider, setMobileMoneyProvider] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ phoneNumber?: string }>({});
+
+  // Fetch payment methods from API
+  const { data: apiPaymentMethods, isLoading: isMethodsLoading } = useGetPaymentMethodsQuery(true);
 
   // Redirect if no product selected
   useEffect(() => {
@@ -61,10 +65,16 @@ export default function PaymentPage() {
     }
   }, [totalPrice, dispatch]);
 
-  const handleMethodSelect = (method: PaymentMethod) => {
+  const handleMethodSelect = (method: PaymentMethodCategory) => {
     setSelectedMethod(method);
     dispatch(setPaymentMethod(method));
     setErrors({});
+
+    // Auto-select first provider for the category if available
+    if (method === 'MOBILE_MONEY' && apiPaymentMethods && apiPaymentMethods.length > 0) {
+      setMobileMoneyProvider(apiPaymentMethods[0].serviceCode);
+      setSelectedProvider(apiPaymentMethods[0]);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -178,7 +188,7 @@ export default function PaymentPage() {
     return 'Standard';
   };
 
-  const getPaymentMethodLabel = (method: PaymentMethod): string => {
+  const getPaymentMethodLabel = (method: PaymentMethodCategory): string => {
     switch (method) {
       case 'MOBILE_MONEY':
         return 'Mobile Money';
@@ -252,13 +262,29 @@ export default function PaymentPage() {
                         </label>
                         <select
                           value={mobileMoneyProvider}
-                          onChange={(e) => setMobileMoneyProvider(e.target.value)}
+                          onChange={(e) => {
+                            setMobileMoneyProvider(e.target.value);
+                            const provider = apiPaymentMethods?.find(p => p.serviceCode === e.target.value);
+                            if (provider) setSelectedProvider(provider);
+                          }}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white mb-2"
                         >
-                          <option value="ORANGE_MONEY">Orange Money</option>
-                          <option value="MOOV_MONEY">Moov Money</option>
-                          <option value="MTN_MONEY">MTN Mobile Money</option>
-                          <option value="WAVE">Wave</option>
+                          {isMethodsLoading ? (
+                            <option>Chargement des opérateurs...</option>
+                          ) : apiPaymentMethods && apiPaymentMethods.length > 0 ? (
+                            apiPaymentMethods.map((method) => (
+                              <option key={method.serviceCode} value={method.serviceCode}>
+                                {method.title}
+                              </option>
+                            ))
+                          ) : (
+                            <>
+                              <option value="ORANGE_MONEY">Orange Money</option>
+                              <option value="MOOV_MONEY">Moov Money</option>
+                              <option value="MTN_MONEY">MTN Mobile Money</option>
+                              <option value="WAVE">Wave</option>
+                            </>
+                          )}
                         </select>
                       </div>
 

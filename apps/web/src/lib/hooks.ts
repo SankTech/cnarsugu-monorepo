@@ -17,15 +17,9 @@ import type {
   CoverageFormula,
   ProductFilters,
   SearchFilters,
-} from './api';
-import {
-  getPaymentMethods,
-  getTermsAndConditions,
-  getCachedPaymentMethods,
-  getCachedTermsAndConditions,
-  type PaymentMethod,
-  type TermsAndConditions,
-} from './api';
+  PaymentMethod,
+  TermsAndConditions,
+} from '@cnarsugu/store';
 
 // Generic async hook
 export function useAsync<T>(
@@ -56,8 +50,7 @@ export function useAsync<T>(
   return { data, loading, error, refetch: execute };
 }
 
-// Insurance Products hooks - temporarily using dataService until Redux hooks are fixed
-// Insurance Products hooks - using Redux hooks
+// Insurance Products hooks - using Redux hooks from @cnarsugu/store
 export function useInsuranceProducts(filters: ProductFilters = {}) {
   const { data, isLoading, error, refetch } = useGetInsuranceProductsQuery(filters);
   return {
@@ -122,21 +115,21 @@ export function useTermsAndConditions(useCache = true) {
   };
 }
 
-// Specific product type hooks using V2 API
+// Product type specific hooks using V2 API
 export function useAutoPricing() {
-  return useInsuranceProducts({ productType: 'auto' });
+  return useInsuranceProducts({ productType: 'AUTO' });
 }
 
 export function useMotoPricing() {
-  return useInsuranceProducts({ productType: 'moto' });
+  return useInsuranceProducts({ productType: 'MOTO' });
 }
 
 export function useMultirisquePackages() {
-  return useInsuranceProducts({ productType: 'multirisque' });
+  return useInsuranceProducts({ productType: 'MULTIRISK_PRO' });
 }
 
 export function useIACProduct() {
-  return useInsuranceProducts({ productType: 'iac' });
+  return useInsuranceProducts({ productType: 'IAC' });
 }
 
 // Local storage hooks

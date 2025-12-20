@@ -8,18 +8,21 @@ declare var process: any;
  * Uses globalThis to access environment variables in both Node and browser environments
  */
 const getApiBaseUrl = (): string => {
-  console.log('BaseAPI: resolving base URL');
-  console.log('BaseAPI: typeof window:', typeof window);
+  const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.API_URL;
 
+  // Browser check
   if (typeof window !== 'undefined') {
-    // Browser environment - use relative path to allow proxying via Next.js
-    console.log('BaseAPI: Browser environment detected, returning empty string');
-    return '';
+    console.log('BaseAPI: Browser environment - NEXT_PUBLIC_API_URL:', publicApiUrl);
+    // If NEXT_PUBLIC_API_URL is empty or undefined, fall back to production domain
+    return (publicApiUrl && publicApiUrl.trim() !== '') ? publicApiUrl : 'https://cnarsugu.cloud';
   }
-  // Node environment or React Native
-  console.log('BaseAPI: Server/Node environment detected');
-  console.log('BaseAPI: process.env.API_URL:', process.env.API_URL);
-  return process.env.API_URL || 'https://cnarsugu.cloud';
+
+  // Server/Node check
+  const resolvedUrl = (publicApiUrl && publicApiUrl.trim() !== '') ? publicApiUrl : apiUrl;
+  console.log('BaseAPI: Server/Node - Final Resolved URL:', resolvedUrl || 'https://cnarsugu.cloud');
+
+  return resolvedUrl || 'https://cnarsugu.cloud';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -34,8 +37,17 @@ export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}`,
-    prepareHeaders: (headers) => {
-      // Add any common headers here (e.g., authentication tokens)
+    prepareHeaders: (headers, { arg }) => {
+      // Add API Key for authentication
+      const apiKey = process.env.NEXT_PUBLIC_API_KEY || '03e42c19-45d3-4bab-b5b2-d9b2eed04a62';
+      headers.set('x-api-key', apiKey);
+
+      // Add content type if not set and NOT FormData
+      // When body is FormData, we MUST NOT set Content-Type to allow the browser to set it with its own boundary
+      if (!headers.has('Content-Type') && !(arg instanceof FormData)) {
+        headers.set('Content-Type', 'application/json');
+      }
+
       return headers;
     },
   }),

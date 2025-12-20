@@ -31,27 +31,27 @@ if exist apps\web\.env.web-only (
 )
 
 REM Build locally to bake in environment variables
-echo 🏗️  Building application locally...
-cd apps\web
+REM echo 🏗️  Building application locally...
+REM cd apps\web
 
 REM Ensure dependencies are installed
-call pnpm install
-if errorlevel 1 (
-    echo ❌ Dependency install failed!
-    cd ..\..
-    exit /b 1
-)
+REM call pnpm install
+REM if errorlevel 1 (
+REM     echo ❌ Dependency install failed!
+REM     cd ..\..
+REM     exit /b 1
+REM )
 
 REM Build Next.js app
-echo 🔨 Running Next.js build...
-call pnpm run build
-if errorlevel 1 (
-    echo ❌ Local build failed!
-    cd ..\..
-    exit /b 1
-)
+REM echo 🔨 Running Next.js build...
+REM call pnpm run build
+REM if errorlevel 1 (
+REM     echo ❌ Local build failed!
+REM     cd ..\..
+REM     exit /b 1
+REM )
 
-cd ..\..
+REM cd ..\..
 
 REM Build the Docker image (Runtime only)
 echo 📦 Packaging Docker image...

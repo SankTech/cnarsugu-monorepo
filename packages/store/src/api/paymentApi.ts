@@ -14,6 +14,14 @@ export interface IacPriceResponse {
     description: string;
 }
 
+export interface PaymentMethod {
+    id: number;
+    title: string;
+    serviceCode: string;
+    validationCall: string;
+    isActive: boolean;
+}
+
 export const paymentApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         createPaymentV2: builder.mutation<any, CreatePaymentV2Request>({
@@ -26,7 +34,7 @@ export const paymentApi = baseApi.injectEndpoints({
         getIacPrice: builder.query<IacPriceResponse, void>({
             query: () => '/v2/payment/iac/price',
         }),
-        getPaymentMethods: builder.query<any[], boolean | void>({
+        getPaymentMethods: builder.query<PaymentMethod[], boolean | void>({
             query: (activeOnly = true) => `/v2/payment-methods?active_only=${activeOnly}`,
         }),
     }),
