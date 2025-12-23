@@ -54,6 +54,7 @@ cd ../..
 # Build the Docker image (Runtime only)
 echo "📦 Packaging Docker image..."
 docker build \
+    --no-cache \
     --file apps/web/Dockerfile.runtime \
     --tag "$FULL_IMAGE_NAME" \
     --tag "ghcr.io/$GITHUB_USERNAME/$IMAGE_NAME:latest" \

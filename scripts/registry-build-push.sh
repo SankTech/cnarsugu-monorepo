@@ -23,7 +23,7 @@ build_and_push() {
     echo "🔨 Building $service..."
     
     # Build image with version tag
-    docker build -f "$dockerfile_path" -t "$REGISTRY_URL/$PROJECT_NAME-$service:$VERSION" "$context_path"
+    docker build --no-cache -f "$dockerfile_path" -t "$REGISTRY_URL/$PROJECT_NAME-$service:$VERSION" "$context_path"
     
     # Tag as latest
     docker tag "$REGISTRY_URL/$PROJECT_NAME-$service:$VERSION" "$REGISTRY_URL/$PROJECT_NAME-$service:$LATEST_TAG"

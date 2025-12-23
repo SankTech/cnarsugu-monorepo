@@ -47,6 +47,7 @@ echo "🏗️  Building web frontend Docker image..."
 
 # Build with build args for optimization
 docker build \
+    --no-cache \
     --file apps/web/Dockerfile \
     --target runner \
     --tag "$FULL_IMAGE_NAME" \

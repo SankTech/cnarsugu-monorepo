@@ -11,7 +11,7 @@
     "build:analyze": "cross-env ANALYZE=true next build",
     "build:production": "cross-env NODE_ENV=production next build",
     "start:production": "cross-env NODE_ENV=production next start",
-    "docker:build": "docker build -t cnarsugu-web .",
+    "docker:build": "docker build --no-cache -t cnarsugu-web .",
     "docker:run": "docker run -p 3000:3000 cnarsugu-web",
     "registry:build": "../scripts/build-web-registry.sh",
     "deploy:web-only": "../scripts/deploy-web-only.sh",
@@ -24,7 +24,7 @@
     "build:cross-platform": "node ../scripts/build-web-cross-platform.js",
     "build:v15": "cp next.config.v15.ts next.config.ts.tmp && mv next.config.ts next.config.ts.bak && mv next.config.ts.tmp next.config.ts && cross-env NODE_ENV=production next build && mv next.config.ts.bak next.config.ts",
     "build:clean": "node ../scripts/build-web-clean.js",
-    "docker:build:windows": "docker build -f Dockerfile.windows -t cnarsugu-web ."
+    "docker:build:windows": "docker build --no-cache -f Dockerfile.windows -t cnarsugu-web ."
   },
   "dependencies": {
     "@cnarsugu/hooks": "workspace:*",
